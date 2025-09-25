@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anonymous Authorization System</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdgAAAHYBTnsmCAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAANCSURBVFiFtZdNTxNBFMd/M9ulLQWKgBQQBREVjQmJJh4kJl7w4sWP4Mez8eTJmydPfgRPnjx58uLFi4nGxIQQE0xMNBHfQFBBQOQL0NK2293ZmdkdD7ttKS1tS5v4T2Yyk5n3/2beuzsD/McfABCNRiONjY2R5ubmlrq6uhZN01AqlcAwDCRJSieTyYPl5eU/q6urH+LxuP23EgAA6XR6n6ZpOgzDQCgUgqZpsFgscDgcsNlsSKVSSKfT0HUder0e+j+VzWaRzWah6zoMwzBd14HWTCbzotKaCmcppQqllCKEAKWUUEopY6OFImyMMZrNZm82mhOhq8yFLo7jNEVROE3TuHK5bCUSieTS0pJeLBYJ51ye4zheVVVVdTgcdY7jOF3XdThNAwAAgiAMmaY5XygU9vV6PZLNZmGxWCCKIjRNg8VigcVigWEYKJVKyOVyyOfzKJfLZqm4uG5mH+ZP7Y7/uBAAYHTnyNjk6L5/AiAMw8jlcrlYsVhENpuFLMuwWq3Q/TH4rQ/LVVOjXqF9CAC0tLb0jI/vnfyXE3AAoVAolE6nd3u93rhSqeRrtRo0TYPFYoGu6zAMA+XyxgQmk8mNSpAfOGj3Dw8P9fT29vYNDAx0+/3+zru8CQAAhGGYXq+3VavVtpTLZZRKJXAcB0EQoGkaNE2Drumm7xebEwJtl57NXIJCfwJZliHLsmXnzp1HvV5vk9frBSEEkiQdNE1zlud5Sy6Xw9raGjRNQ61Ww/r6Omq1GoaHh/fv3LlzIJPJJCRJuiVJEomqqhQAhBBCSKVSKVYqlWw2m61cLlei0Wj6ypUrh48cOTI0Pj7eP0kkScI/BwAAOI4zt27dOtrW1tYVCoVarVYrhRACSqkZRhAEURSL8Xy9Y+vdHNfa2tq7bdu2YDgcbg+FQm7pn1VJksyUNkEQDEEQiqIoVhRFqYiimBdFMV8ul/O1Wi1fq9Vy9Xo9J8tyVpblQr1eF7u7u19PT0+/GhkZGZ2ZmXl25syZqampqUezd6dOAID//X3wDxAKhXo6OjoCLpfL6/P5PC0tLV6fz+f1+Xxef/YuCII5Go1G/wEkvKdCHRcKhAAAAACMgRAXAQ==">
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Buffer polyfill for ethers.js v6 -->
+    <script src="https://cdn.jsdelivr.net/npm/buffer@6.0.3/index.js"></script>
+
+    <script>
+        // Global configuration for ethers.js v6
+        if (typeof global === 'undefined') {
+            var global = globalThis;
+        }
+        if (typeof process === 'undefined') {
+            var process = { env: {} };
+        }
+    </script>
+
+    <!-- Ethers.js v6 with fallback CDNs -->
+    <script>
+        // CDN fallback system
+        function loadEthers() {
+            const ethersUrls = [
+                'https://cdn.jsdelivr.net/npm/ethers@6.15.0/dist/ethers.umd.min.js',
+                'https://unpkg.com/ethers@6.15.0/dist/ethers.umd.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/ethers/6.15.0/ethers.umd.min.js'
+            ];
+
+            let currentIndex = 0;
+
+            function tryLoadEthers() {
+                if (currentIndex >= ethersUrls.length) {
+                    console.error('Failed to load ethers from all CDN sources');
+                    document.body.innerHTML = '<div style="text-align: center; padding: 50px; color: red;"><h2>❌ Failed to Load Required Libraries</h2><p>Unable to load ethers.js from CDN. Please check your internet connection and try again.</p><button onclick="location.reload()">Retry</button></div>';
+                    return;
+                }
+
+                const script = document.createElement('script');
+                script.src = ethersUrls[currentIndex];
+                script.async = false;
+
+                script.onload = function() {
+                    console.log('✅ Ethers.js loaded from:', ethersUrls[currentIndex]);
+                };
+
+                script.onerror = function() {
+                    console.warn('❌ Failed to load ethers from:', ethersUrls[currentIndex]);
+                    currentIndex++;
+                    tryLoadEthers();
+                };
+
+                document.head.appendChild(script);
+            }
+
+            tryLoadEthers();
+        }
+
+        // Start loading ethers
+        loadEthers();
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Anonymous Authorization System</h1>
+            <p class="subtitle">Privacy-Preserving Access Control with FHE Technology</p>
+            <div class="wallet-section">
+                <button id="connectWallet" class="btn btn-primary">Connect Wallet</button>
+                <div id="walletInfo" class="wallet-info hidden">
+                    <span id="walletAddress"></span>
+                    <span id="networkStatus"></span>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <!-- Admin Panel -->
+            <section id="adminPanel" class="panel hidden">
+                <h2>Admin Panel</h2>
+                <div class="card">
+                    <h3>Issue Authorization Token</h3>
+                    <form id="issueTokenForm">
+                        <div class="form-group">
+                            <label for="holderAddress">Holder Address:</label>
+                            <input type="text" id="holderAddress" placeholder="0x..." required>
+                        </div>
+                        <div class="form-group">
+                            <label for="authLevel">Authorization Level:</label>
+                            <select id="authLevel" required>
+                                <option value="0">NONE</option>
+                                <option value="1">BASIC</option>
+                                <option value="2">PREMIUM</option>
+                                <option value="3">ADMIN</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="expiryDays">Expiry (Days from now):</label>
+                            <input type="number" id="expiryDays" min="1" max="365" value="30" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Issue Token</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h3>Authorize Issuer</h3>
+                    <form id="authorizeIssuerForm">
+                        <div class="form-group">
+                            <label for="issuerAddress">Issuer Address:</label>
+                            <input type="text" id="issuerAddress" placeholder="0x..." required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Authorize Issuer</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h3>Process Authorization Requests</h3>
+                    <div id="pendingRequests" class="requests-list">
+                        <p class="loading">Loading pending requests...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- User Panel -->
+            <section id="userPanel" class="panel">
+                <h2>User Dashboard</h2>
+
+                <div class="card">
+                    <h3>My Authorization Tokens</h3>
+                    <div id="userTokens" class="tokens-list">
+                        <p class="loading">Loading your tokens...</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Request Authorization</h3>
+                    <form id="requestAuthForm">
+                        <div class="form-group">
+                            <label for="requestLevel">Requested Level:</label>
+                            <select id="requestLevel" required>
+                                <option value="1">BASIC</option>
+                                <option value="2">PREMIUM</option>
+                                <option value="3">ADMIN</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Request Authorization</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h3>Verify Access</h3>
+                    <form id="verifyAccessForm">
+                        <div class="form-group">
+                            <label for="tokenId">Token ID:</label>
+                            <input type="number" id="tokenId" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="resourceId">Resource ID:</label>
+                            <input type="number" id="resourceId" min="0" max="255" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="requiredLevel">Required Level:</label>
+                            <select id="requiredLevel" required>
+                                <option value="1">BASIC</option>
+                                <option value="2">PREMIUM</option>
+                                <option value="3">ADMIN</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Verify Access</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h3>Access History</h3>
+                    <div id="accessHistory" class="history-list">
+                        <p class="loading">Loading access history...</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Status Messages -->
+        <div id="statusMessage" class="status-message hidden">
+            <div class="status-content">
+                <span id="statusText"></span>
+                <button id="closeStatus" class="close-btn">&times;</button>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="loading-overlay hidden">
+            <div class="loading-spinner"></div>
+            <p>Processing transaction...</p>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Anonymous Authorization System. Privacy-preserving access control powered by FHE technology.</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

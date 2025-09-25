@@ -1,0 +1,32 @@
+{
+  "name": "anonymous-authorization-system",
+  "version": "1.0.0",
+  "description": "Anonymous Authorization System with FHE Privacy Management",
+  "main": "index.js",
+  "scripts": {
+    "compile": "npx hardhat compile",
+    "deploy": "npx hardhat run scripts/deploy.js --network sepolia",
+    "test": "npx hardhat test",
+    "node": "npx hardhat node",
+    "clean": "npx hardhat clean"
+  },
+  "keywords": [
+    "fhe",
+    "privacy",
+    "authorization",
+    "zama",
+    "blockchain",
+    "anonymous"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "hardhat": "^2.24.3"
+  },
+  "dependencies": {
+    "@fhevm/solidity": "^0.8.0",
+    "@zama-fhe/oracle-solidity": "^0.1.0",
+    "dotenv": "^16.3.1"
+  }
+}
